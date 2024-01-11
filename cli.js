@@ -2,7 +2,7 @@ const axios = require("axios");
 require("dotenv").config()
 
 const apiKey = process.env.OPENAI_API_KEY;
-const OPENAI_API_URL = "https://api.openai.com/v1/completions";
+const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
   
 const client = axios.create({
   headers: {
@@ -12,19 +12,32 @@ const client = axios.create({
 
 
 async function interactWithChatGPT(prompt) {
+
   const params = {
-    prompt: prompt,
-    model: "text-davinci-003",
+    messages: [
+    {
+      role: 'system',
+      content: 'You are a helpful assistant.',
+    },
+    {
+      role: 'user',
+      content: prompt,
+    },
+  ],
+    model: "gpt-4",
     max_tokens: 150,
     temperature: 0,
   };
 
   try {
     const result = await client.post(OPENAI_API_URL, params);
-    console.log("ChatGPT:", result.data.choices[0].text.trim());
+    const answer = result.data.choices[0].message.content;
+    console.log("ChatGPT:");
+    console.log(answer);
+    console.log();
 
   } catch (error) {
-
+    console.error("Error interacting with ChatGPT:", error.response ? error.response.data : error.message);
     if (error.response && error.response.status === 429) {
       console.warn("Rate limited. Retrying after a delay...");
       // Implement a backoff strategy, e.g., exponential backoff
