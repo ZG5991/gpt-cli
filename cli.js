@@ -1,5 +1,6 @@
 const axios = require("axios");
-require("dotenv").config()
+require("dotenv").config();
+const getParams = require('./params');
 
 const apiKey = process.env.OPENAI_API_KEY;
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
@@ -12,23 +13,9 @@ const client = axios.create({
 
 
 async function interactWithChatGPT(prompt) {
-
-  const params = {
-    messages: [
-    {
-      role: 'system',
-      content: 'You are a helpful assistant.',
-    },
-    {
-      role: 'user',
-      content: prompt,
-    },
-  ],
-    model: "gpt-4",
-    max_tokens: 150,
-    temperature: 0,
-  };
-
+  
+  const params = getParams(prompt);
+  
   try {
     const result = await client.post(OPENAI_API_URL, params);
     const answer = result.data.choices[0].message.content;
