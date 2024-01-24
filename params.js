@@ -13,7 +13,7 @@ function getParams(userPrompt) {
           },
         ],
         model: "gpt-4",
-        max_tokens: 150,
+        max_tokens: 200,
         temperature: 0,
       };
   };
