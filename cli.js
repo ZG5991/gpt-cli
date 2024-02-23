@@ -1,9 +1,13 @@
 const axios = require("axios");
-require("dotenv").config()
+require("dotenv").config();
+const getParams = require('./params');
 
 const apiKey = process.env.OPENAI_API_KEY;
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
-  
+const sleep = (ms) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+};
+
 const client = axios.create({
   headers: {
     Authorization: "Bearer " + apiKey,
@@ -12,29 +16,17 @@ const client = axios.create({
 
 
 async function interactWithChatGPT(prompt) {
+  
+  const params = getParams(prompt);
+  console.log('loading response...'); 
 
-  const params = {
-    messages: [
-    {
-      role: 'system',
-      content: 'You are a helpful assistant.',
-    },
-    {
-      role: 'user',
-      content: prompt,
-    },
-  ],
-    model: "gpt-4",
-    max_tokens: 150,
-    temperature: 0,
-  };
 
   try {
+
     const result = await client.post(OPENAI_API_URL, params);
     const answer = result.data.choices[0].message.content;
-    console.log("ChatGPT:");
-    console.log(answer);
-    console.log();
+  
+    await printToConsole('\x1b[32m' + answer + '\x1b[0m', 10);
 
   } catch (error) {
     console.error("Error interacting with ChatGPT:", error.response ? error.response.data : error.message);
@@ -50,14 +42,17 @@ async function interactWithChatGPT(prompt) {
 
 async function startChatGPTCLI() {
 
-  console.log("Welcome to ChatGPT CLI! \
+  
+  await printToConsole(
+    "Welcome to ChatGPT CLI! \
   \nEnter a prompt to begin chatting. \
-  \nTo exit the GPT CLI just type 'exit' at any time.");
+  \nTo exit the GPT CLI just type 'exit' at any time.", 10
+  ); //give the above code time to execute before asking for a prompt
 
   while (true) {
     const userPrompt = await askQuestion();
     if (userPrompt.toLowerCase() === "exit") {
-      console.log("Exiting ChatGPT CLI. Goodbye!");
+      printToConsole("Exiting ChatGPT CLI. Goodbye!", 10);
       break;
     }
     await interactWithChatGPT(userPrompt);
@@ -65,6 +60,8 @@ async function startChatGPTCLI() {
 }
 
 async function askQuestion() {
+  
+
   const inquirer = (await import("inquirer")).default;
   const { answer } = await inquirer.prompt([
     {
@@ -76,5 +73,18 @@ async function askQuestion() {
 
   return answer;
 }
+
+// const to print gpt answers letter by letter
+async function printToConsole(answer, delay) {
+
+  for (char of answer) {
+    process.stdout.write(char);
+    await sleep(delay);
+  }
+
+  process.stdout.write('\n');
+
+}
+
 
 startChatGPTCLI();
