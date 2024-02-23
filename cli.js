@@ -18,11 +18,15 @@ const client = axios.create({
 async function interactWithChatGPT(prompt) {
   
   const params = getParams(prompt);
-  
+  console.log('loading response...'); 
+
+
   try {
+
     const result = await client.post(OPENAI_API_URL, params);
     const answer = result.data.choices[0].message.content;
-   await printToConsole(answer, 10);
+  
+    await printToConsole('\x1b[32m' + answer + '\x1b[0m', 10);
 
   } catch (error) {
     console.error("Error interacting with ChatGPT:", error.response ? error.response.data : error.message);
@@ -77,9 +81,10 @@ async function printToConsole(answer, delay) {
     process.stdout.write(char);
     await sleep(delay);
   }
+
   process.stdout.write('\n');
 
-
 }
+
 
 startChatGPTCLI();
